@@ -1,9 +1,5 @@
-﻿# CMakeList.txt : CMake project for fast-qdot, include source and define
-# project specific logic here.
-#
-cmake_minimum_required (VERSION 3.8)
+cmake_minimum_required (VERSION 3.14)
 
-# Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)
   cmake_policy(SET CMP0141 NEW)
   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
@@ -11,11 +7,47 @@ endif()
 
 project ("fast-qdot")
 
-# Add source to this project's executable.
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# ── Main executable ────────────────────────────────────────────────────────────
 add_executable (fast-qdot "fast-qdot.cpp" "fast-qdot.h")
 
-if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET fast-qdot PROPERTY CXX_STANDARD 20)
-endif()
+# ── Dependencies via FetchContent ──────────────────────────────────────────────
+include(FetchContent)
 
-# TODO: Add tests and install targets if needed.
+FetchContent_Declare(
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG        v1.15.2
+  GIT_SHALLOW    TRUE
+)
+
+# prevents overriding
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+FetchContent_Declare(
+  benchmark
+  GIT_REPOSITORY https://github.com/google/benchmark.git
+  GIT_TAG        v1.9.0
+  GIT_SHALLOW    TRUE
+)
+set(BENCHMARK_ENABLE_TESTING   OFF CACHE BOOL "" FORCE)
+set(BENCHMARK_ENABLE_GTEST_TESTS OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(benchmark)
+
+# ── Tests ──────────────────────────────────────────────────────────────────────
+enable_testing()
+
+add_executable(fast-qdot-tests tests/test_main.cpp)
+target_link_libraries(fast-qdot-tests PRIVATE GTest::gtest_main)
+target_include_directories(fast-qdot-tests PRIVATE ${CMAKE_SOURCE_DIR})
+
+include(GoogleTest)
+gtest_discover_tests(fast-qdot-tests)
+
+# ── Benchmarks ─────────────────────────────────────────────────────────────────
+add_executable(fast-qdot-bench benchmarks/bench_main.cpp)
+target_link_libraries(fast-qdot-bench PRIVATE benchmark::benchmark_main)
+target_include_directories(fast-qdot-bench PRIVATE ${CMAKE_SOURCE_DIR})

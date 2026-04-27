@@ -1,0 +1,43 @@
+# Build output
+out/
+build/
+cmake-build-*/
+
+# CMake generated
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+_deps/
+
+# Compiled binaries and objects
+*.exe
+*.dll
+*.so
+*.dylib
+*.o
+*.obj
+*.a
+*.lib
+*.pdb
+*.ilk
+*.exp
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docview
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.sdf
+*.VC.db
+*.VC.opendb
+*.opensdf
+ipch/
+x64/
+x86/
+Debug/
+Release/

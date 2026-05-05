@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # ── Main executable ────────────────────────────────────────────────────────────
-add_executable (fast-qdot "fast-qdot.cpp" "fast-qdot.h")
+add_executable (fast-qdot "fast-qdot.cpp" "fast-qdot.h" "src/naive.cpp")
 
 # ── Dependencies via FetchContent ──────────────────────────────────────────────
 include(FetchContent)
@@ -40,7 +40,7 @@ FetchContent_MakeAvailable(benchmark)
 # ── Tests ──────────────────────────────────────────────────────────────────────
 enable_testing()
 
-add_executable(fast-qdot-tests tests/test_main.cpp)
+add_executable(fast-qdot-tests tests/test_main.cpp "src/naive.cpp")
 target_link_libraries(fast-qdot-tests PRIVATE GTest::gtest_main)
 target_include_directories(fast-qdot-tests PRIVATE ${CMAKE_SOURCE_DIR})
 
@@ -48,6 +48,6 @@ include(GoogleTest)
 gtest_discover_tests(fast-qdot-tests)
 
 # ── Benchmarks ─────────────────────────────────────────────────────────────────
-add_executable(fast-qdot-bench benchmarks/bench_main.cpp)
+add_executable(fast-qdot-bench benchmarks/bench_main.cpp "src/naive.cpp")
 target_link_libraries(fast-qdot-bench PRIVATE benchmark::benchmark_main)
 target_include_directories(fast-qdot-bench PRIVATE ${CMAKE_SOURCE_DIR})

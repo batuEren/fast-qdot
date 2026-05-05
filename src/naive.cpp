@@ -1,4 +1,4 @@
-#include <cstdint>
+#include "naive.h"
 #include <cassert>
 
 // Weight packing: 2-bit per weight, 4 per byte
@@ -12,10 +12,9 @@ int32_t naive_ternary_dot(const uint8_t* weights, const int8_t* activations, int
 
     for (int i = 0; i < n / 4; i++) {
         uint8_t b = weights[i];
-        sum += ((int32_t)((b >> 6) & 0x03) - 1) * (int32_t)activations[i * 4 + 0];
-        sum += ((int32_t)((b >> 4) & 0x03) - 1) * (int32_t)activations[i * 4 + 1];
-        sum += ((int32_t)((b >> 2) & 0x03) - 1) * (int32_t)activations[i * 4 + 2];
-        sum += ((int32_t)((b >> 0) & 0x03) - 1) * (int32_t)activations[i * 4 + 3];
+        for (int j = 0; j < 4; j++) {
+            sum += ((int32_t)((b >> (3-j)*2) & 0x03) - 1) * (int32_t)activations[i * 4 + j];
+        }
     }
 
     return sum;

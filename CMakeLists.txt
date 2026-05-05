@@ -40,7 +40,20 @@ FetchContent_MakeAvailable(benchmark)
 # ── Tests ──────────────────────────────────────────────────────────────────────
 enable_testing()
 
-add_executable(fast-qdot-tests tests/test_main.cpp "src/naive.cpp")
+if(MSVC)
+    set_source_files_properties(src/mad_avx2.cpp PROPERTIES COMPILE_FLAGS "/arch:AVX2")
+else()
+    set_source_files_properties(src/mad_avx2.cpp PROPERTIES COMPILE_FLAGS "-mavx2")
+endif()
+
+add_executable(fast-qdot-tests
+    tests/test_main.cpp
+    tests/test_mad.cpp
+    tests/test_mad_avx2.cpp
+    "src/naive.cpp"
+    "src/mad.cpp"
+    "src/mad_avx2.cpp"
+)
 target_link_libraries(fast-qdot-tests PRIVATE GTest::gtest_main)
 target_include_directories(fast-qdot-tests PRIVATE ${CMAKE_SOURCE_DIR})
 
@@ -48,6 +61,6 @@ include(GoogleTest)
 gtest_discover_tests(fast-qdot-tests)
 
 # ── Benchmarks ─────────────────────────────────────────────────────────────────
-add_executable(fast-qdot-bench benchmarks/bench_main.cpp "src/naive.cpp")
+add_executable(fast-qdot-bench benchmarks/bench_main.cpp "src/naive.cpp" "src/mad.cpp" "src/mad_avx2.cpp")
 target_link_libraries(fast-qdot-bench PRIVATE benchmark::benchmark_main)
 target_include_directories(fast-qdot-bench PRIVATE ${CMAKE_SOURCE_DIR})

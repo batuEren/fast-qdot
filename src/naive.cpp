@@ -20,7 +20,7 @@ int32_t naive_ternary_dot(const uint8_t* weights, const int8_t* activations, int
     return sum;
 }
 
-// Weight packing: 1-bit per weight, 8 per byte - no packing
+// Weight packing: 1-bit per weight, 8 per byte
 // Bit layout: bits[7]=w0, bits[6]=w1, ..., bits[0]=w7
 // Encoding: 0=-1, 1=+1  =>  decoded = 2*bit - 1
 
@@ -32,7 +32,7 @@ int32_t naive_binary_dot(const uint8_t* weights, const int8_t* activations, int 
 
     for (int i = 0; i < n / 8; i++) {
         uint8_t b = weights[i];
-        for (int j = 0; j < 8; j++) { // no loop unrolling - try adding later
+        for (int j = 0; j < 8; j++) {
             int32_t bit = (b >> (7 - j)) & 0x01;
             sum += (2 * bit - 1) * (int32_t)activations[i * 8 + j];
         }

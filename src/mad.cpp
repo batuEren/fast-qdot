@@ -111,8 +111,8 @@ int32_t mad_binary_dot(const uint8_t* weights, const int8_t* activations, int n)
         __m128i w_spread = _mm_shuffle_epi8(w2, BSPREAD);
 
         // Isolate one bit per lane, normalise to {0,1}.
-        __m128i bits   = _mm_and_si128(w_spread, BIT_MASK);
-        __m128i is_set = _mm_min_epu8(bits, ones8);
+        __m128i bits   = _mm_and_si128(w_spread, BIT_MASK); 
+        __m128i is_set = _mm_min_epu8(bits, ones8); // normalize to 1 at max
 
         // sign: 0x01 (+1) where bit=1, 0xFF (-1) where bit=0.
         __m128i sign = _mm_sub_epi8(_mm_add_epi8(is_set, is_set), ones8);

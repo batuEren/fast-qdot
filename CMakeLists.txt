@@ -64,3 +64,7 @@ gtest_discover_tests(fast-qdot-tests)
 add_executable(fast-qdot-bench benchmarks/bench_main.cpp "src/naive.cpp" "src/mad.cpp" "src/mad_avx2.cpp")
 target_link_libraries(fast-qdot-bench PRIVATE benchmark::benchmark_main)
 target_include_directories(fast-qdot-bench PRIVATE ${CMAKE_SOURCE_DIR})
+target_compile_options(fast-qdot-bench PRIVATE
+    $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<CONFIG:Release>>:/O2>
+    $<$<AND:$<NOT:$<CXX_COMPILER_ID:MSVC>>,$<CONFIG:Release>>:-O3 -march=native>
+)

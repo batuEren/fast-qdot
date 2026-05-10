@@ -5,6 +5,7 @@
 #include "src/naive.h"
 #include "src/mad.h"
 #include "src/mad_avx2.h"
+#include "src/lut.h"
 
 // Helpers
 
@@ -28,6 +29,27 @@ static std::vector<uint8_t> make_ternary_weights(int n) {
 // Binary weights: 1 bit per weight, 8 per byte → n/8 bytes
 static std::vector<uint8_t> make_binary_weights(int n) {
     std::mt19937 rng(77);
+    std::uniform_int_distribution<int> dist(0, 255);
+    std::vector<uint8_t> v(n / 8);
+    for (auto& x : v) x = (uint8_t)dist(rng);
+    return v;
+}
+
+// LUT ternary weights: nibble-packed pair-indices, 2 pairs per byte → n/4 bytes.
+// Each nibble is a valid pair-index in {0..8}: 3*(c_even+1) + (c_odd+1).
+static std::vector<uint8_t> make_lut_ternary_weights(int n) {
+    std::mt19937 rng(11);
+    std::uniform_int_distribution<int> dist(0, 8);
+    std::vector<uint8_t> v(n / 4);
+    for (auto& x : v) x = (uint8_t)((dist(rng) << 4) | dist(rng));
+    return v;
+}
+
+// LUT binary weights: 2-bit pair-indices, 4 pairs per byte → n/8 bytes.
+// Each 2-bit field encodes (w_even==+1)*2 + (w_odd==+1) ∈ {0..3}.
+// Any random byte already contains valid indices, so reuse make_binary_weights layout.
+static std::vector<uint8_t> make_lut_binary_weights(int n) {
+    std::mt19937 rng(55);
     std::uniform_int_distribution<int> dist(0, 255);
     std::vector<uint8_t> v(n / 8);
     for (auto& x : v) x = (uint8_t)dist(rng);
@@ -108,3 +130,27 @@ static void BM_MadBinaryAVX2(benchmark::State& state) {
 }
 // mad_binary_dot_avx2 requires n % 32 == 0; smallest power-of-2 that qualifies is 64
 BENCHMARK(BM_MadBinaryAVX2)->RangeMultiplier(2)->Range(64, 8192);
+
+// lut_ternary_dot
+
+static void BM_LutTernary(benchmark::State& state) {
+    int n = (int)state.range(0);
+    auto w = make_lut_ternary_weights(n);
+    auto a = make_activations(n);
+    for (auto _ : state)
+        benchmark::DoNotOptimize(lut_ternary_dot(w.data(), a.data(), n));
+    state.SetItemsProcessed(state.iterations() * n);
+}
+BENCHMARK(BM_LutTernary)->RangeMultiplier(2)->Range(64, 8192);
+
+// lut_binary_dot
+
+static void BM_LutBinary(benchmark::State& state) {
+    int n = (int)state.range(0);
+    auto w = make_lut_binary_weights(n);
+    auto a = make_activations(n);
+    for (auto _ : state)
+        benchmark::DoNotOptimize(lut_binary_dot(w.data(), a.data(), n));
+    state.SetItemsProcessed(state.iterations() * n);
+}
+BENCHMARK(BM_LutBinary)->RangeMultiplier(2)->Range(64, 8192);

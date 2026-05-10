@@ -2,6 +2,7 @@
 #include <immintrin.h>
 #include <cassert>
 #include <array>
+#include <vector>
 
 constexpr int LUT_SIZE = 3;
 
@@ -21,10 +22,12 @@ template<int N>
 constexpr auto lut_initializer() {
 	typename LUT<uint8_t, N, 3>::type lut{};
 
-	lut[2][2][2] = 10;
+	
 
 	return 1;
 }
+
+constexpr auto helper(int depth, std::vector<uint8_t>& arr1, std::vector<uint8_t>& arr2)
 
 constexpr int i = lut_initializer<3>();
 

@@ -6,6 +6,7 @@
 #include "src/mad.h"
 #include "src/mad_avx2.h"
 #include "src/lut.h"
+#include "src/procedural_lut.h"
 
 // Helpers
 
@@ -42,6 +43,24 @@ static std::vector<uint8_t> make_lut_ternary_weights(int n) {
     std::uniform_int_distribution<int> dist(0, 8);
     std::vector<uint8_t> v(n / 4);
     for (auto& x : v) x = (uint8_t)((dist(rng) << 4) | dist(rng));
+    return v;
+}
+
+// Procedural ternary weights: one byte per weight, value in {0,1,2} → n bytes.
+static std::vector<uint8_t> make_p_ternary_weights(int n) {
+    std::mt19937 rng(13);
+    std::uniform_int_distribution<int> dist(0, 2);
+    std::vector<uint8_t> v(n);
+    for (auto& x : v) x = (uint8_t)dist(rng);
+    return v;
+}
+
+// Procedural binary weights: one byte per weight, value in {0,1} → n bytes.
+static std::vector<uint8_t> make_p_binary_weights(int n) {
+    std::mt19937 rng(17);
+    std::uniform_int_distribution<int> dist(0, 1);
+    std::vector<uint8_t> v(n);
+    for (auto& x : v) x = (uint8_t)dist(rng);
     return v;
 }
 
@@ -142,6 +161,30 @@ static void BM_LutTernary(benchmark::State& state) {
     state.SetItemsProcessed(state.iterations() * n);
 }
 BENCHMARK(BM_LutTernary)->RangeMultiplier(2)->Range(64, 8192);
+
+// p_lut_ternary_dot — n must be a multiple of 3; use 96*2^k series
+
+static void BM_PLutTernary(benchmark::State& state) {
+    int n = (int)state.range(0);
+    auto w = make_p_ternary_weights(n);
+    auto a = make_activations(n);
+    for (auto _ : state)
+        benchmark::DoNotOptimize(p_lut_ternary_dot(w.data(), a.data(), n));
+    state.SetItemsProcessed(state.iterations() * n);
+}
+BENCHMARK(BM_PLutTernary)->RangeMultiplier(2)->Range(96, 6144);
+
+// p_lut_binary_dot
+
+static void BM_PLutBinary(benchmark::State& state) {
+    int n = (int)state.range(0);
+    auto w = make_p_binary_weights(n);
+    auto a = make_activations(n);
+    for (auto _ : state)
+        benchmark::DoNotOptimize(p_lut_binary_dot(w.data(), a.data(), n));
+    state.SetItemsProcessed(state.iterations() * n);
+}
+BENCHMARK(BM_PLutBinary)->RangeMultiplier(2)->Range(64, 8192);
 
 // lut_binary_dot
 

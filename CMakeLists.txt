@@ -55,7 +55,7 @@ add_executable(fast-qdot-tests
     "src/mad.cpp"
     "src/mad_avx2.cpp"
     "src/lut.cpp"
-    "src/lut.h" "src/procedural_lut.cpp" "src/procedural_lut.h")
+    "src/lut.h" "src/procedural_lut.cpp" "src/procedural_lut.h" "tests/test_lut_generic.cpp")
 target_link_libraries(fast-qdot-tests PRIVATE GTest::gtest_main)
 target_include_directories(fast-qdot-tests PRIVATE ${CMAKE_SOURCE_DIR})
 

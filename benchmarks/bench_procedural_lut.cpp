@@ -1,11 +1,8 @@
 #include <benchmark/benchmark.h>
-#include <cvmarkersobj.h>
 #include <cstdint>
 #include <vector>
 #include <array>
 #include <random>
-
-static Concurrency::diagnostic::marker_series g_series(L"ProceduralLUT");
 
 // Templated procedural LUT ternary dot product.
 // Weights: one byte per element in {0,1,2} mapping to {-1, 0, +1}.
@@ -98,13 +95,8 @@ static void BM_PLutTernary(benchmark::State& state) {
     int n = raw_n - (raw_n % N);
     auto w = make_ternary_weights(raw_n);
     auto a = make_activations(raw_n);
-    {
-        Concurrency::diagnostic::span s(g_series, L"PLutTernary N=%d n=%d", N, n);
-        g_series.write_flag(L"PLutTernary N=%d n=%d start", N, n);
-        for (auto _ : state)
-            benchmark::DoNotOptimize(p_lut_ternary_dot_n<N>(w.data(), a.data(), n));
-        g_series.write_flag(L"PLutTernary N=%d n=%d end", N, n);
-    }
+    for (auto _ : state)
+        benchmark::DoNotOptimize(p_lut_ternary_dot_n<N>(w.data(), a.data(), n));
     state.SetItemsProcessed(state.iterations() * n);
 }
 
@@ -114,13 +106,8 @@ static void BM_PLutBinary(benchmark::State& state) {
     int n = raw_n - (raw_n % N);
     auto w = make_binary_weights(raw_n);
     auto a = make_activations(raw_n);
-    {
-        Concurrency::diagnostic::span s(g_series, L"PLutBinary N=%d n=%d", N, n);
-        g_series.write_flag(L"PLutBinary N=%d n=%d start", N, n);
-        for (auto _ : state)
-            benchmark::DoNotOptimize(p_lut_binary_dot_n<N>(w.data(), a.data(), n));
-        g_series.write_flag(L"PLutBinary N=%d n=%d end", N, n);
-    }
+    for (auto _ : state)
+        benchmark::DoNotOptimize(p_lut_binary_dot_n<N>(w.data(), a.data(), n));
     state.SetItemsProcessed(state.iterations() * n);
 }
 

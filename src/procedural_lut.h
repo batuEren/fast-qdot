@@ -83,4 +83,40 @@ int32_t p_lut_binary_dot(const uint8_t* weights, const int8_t* activations, int 
     return result;
 }
 
-int32_t* p_lut_binary_matrix_vector_prod(const uint8_t* weights, const int8_t* activations, int n);
+template<int N>
+std::vector<int32_t> p_lut_ternary_matrix_vector_prod(const uint8_t* weights, const int8_t* activations, int m, int n) {
+    auto lut = create_ternary_lut<N>(activations, n);
+    std::vector<int32_t> result(m, 0);
+
+    for (int row = 0; row < m; row++) {
+        for (int i = 0; i < n / N; i++) {
+            int lutIdx = 0;
+            int powAcc = 1;
+            for (int j = 0; j < N; j++) {
+                lutIdx += weights[row * n + i * N + j] * powAcc;
+                powAcc *= 3;
+            }
+            result[row] += lut[i][lutIdx];
+        }
+    }
+
+    return result;
+}
+
+template<int N>
+std::vector<int32_t> p_lut_binary_matrix_vector_prod(const uint8_t* weights, const int8_t* activations, int m, int n) {
+    auto lut = create_binary_lut<N>(activations, n);
+    std::vector<int32_t> result(m, 0);
+
+    for (int row = 0; row < m; row++) {
+        for (int i = 0; i < n / N; i++) {
+            int lutIdx = 0;
+            for (int j = 0; j < N; j++) {
+                lutIdx |= (weights[row * n + i * N + j] & 1) << j;
+            }
+            result[row] += lut[i][lutIdx];
+        }
+    }
+
+    return result;
+}

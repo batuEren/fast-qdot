@@ -55,7 +55,8 @@ add_executable(fast-qdot-tests
     "src/mad.cpp"
     "src/mad_avx2.cpp"
     "src/lut.cpp"
-    "src/lut.h" "src/procedural_lut.cpp" "src/procedural_lut.h" "tests/test_lut_generic.cpp")
+    "src/lut.h" "src/procedural_lut.cpp" "src/procedural_lut.h" "tests/test_lut_generic.cpp"
+    "tests/test_matvec.cpp")
 target_link_libraries(fast-qdot-tests PRIVATE GTest::gtest_main)
 target_include_directories(fast-qdot-tests PRIVATE ${CMAKE_SOURCE_DIR})
 
@@ -75,6 +76,14 @@ add_executable(fast-qdot-bench-procedural benchmarks/bench_procedural_lut.cpp)
 target_link_libraries(fast-qdot-bench-procedural PRIVATE benchmark::benchmark_main)
 target_include_directories(fast-qdot-bench-procedural PRIVATE ${CMAKE_SOURCE_DIR})
 target_compile_options(fast-qdot-bench-procedural PRIVATE
+    $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<CONFIG:Release>>:/O2>
+    $<$<AND:$<NOT:$<CXX_COMPILER_ID:MSVC>>,$<CONFIG:Release>>:-O3 -march=native>
+)
+
+add_executable(fast-qdot-bench-matvec benchmarks/bench_matvec.cpp "src/procedural_lut.cpp")
+target_link_libraries(fast-qdot-bench-matvec PRIVATE benchmark::benchmark_main)
+target_include_directories(fast-qdot-bench-matvec PRIVATE ${CMAKE_SOURCE_DIR})
+target_compile_options(fast-qdot-bench-matvec PRIVATE
     $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<CONFIG:Release>>:/O2>
     $<$<AND:$<NOT:$<CXX_COMPILER_ID:MSVC>>,$<CONFIG:Release>>:-O3 -march=native>
 )

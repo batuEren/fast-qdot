@@ -169,7 +169,7 @@ static void BM_PLutTernary(benchmark::State& state) {
     auto w = make_p_ternary_weights(n);
     auto a = make_activations(n);
     for (auto _ : state)
-        benchmark::DoNotOptimize(p_lut_ternary_dot(w.data(), a.data(), n));
+        benchmark::DoNotOptimize(p_lut_ternary_dot<3>(w.data(), a.data(), n));
     state.SetItemsProcessed(state.iterations() * n);
 }
 BENCHMARK(BM_PLutTernary)->RangeMultiplier(2)->Range(96, 6144);
@@ -181,7 +181,7 @@ static void BM_PLutBinary(benchmark::State& state) {
     auto w = make_p_binary_weights(n);
     auto a = make_activations(n);
     for (auto _ : state)
-        benchmark::DoNotOptimize(p_lut_binary_dot(w.data(), a.data(), n));
+        benchmark::DoNotOptimize(p_lut_binary_dot<4>(w.data(), a.data(), n));
     state.SetItemsProcessed(state.iterations() * n);
 }
 BENCHMARK(BM_PLutBinary)->RangeMultiplier(2)->Range(64, 8192);

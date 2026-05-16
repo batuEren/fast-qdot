@@ -4,6 +4,8 @@
 #include <vector>
 #include <array>
 #include <random>
+#include <filesystem>
+#include <string>
 
 // ── Data generators ────────────────────────────────────────────────────────────
 
@@ -114,3 +116,37 @@ BENCHMARK_TEMPLATE(BM_PLutBinaryDotOnly, 3)->Arg(4096)->Arg(8192)->MinTime(2.0);
 BENCHMARK_TEMPLATE(BM_PLutBinaryDotOnly, 4)->Arg(4096)->Arg(8192)->MinTime(2.0);
 BENCHMARK_TEMPLATE(BM_PLutBinaryDotOnly, 5)->Arg(4096)->Arg(8192)->MinTime(2.0);
 BENCHMARK_TEMPLATE(BM_PLutBinaryDotOnly, 6)->Arg(4096)->Arg(8192)->MinTime(2.0);
+
+// ── Main ──────────────────────────────────────────────────────────────────────
+
+// Walk up from the executable's directory until we find CMakeLists.txt.
+// This works regardless of which build subdirectory the exe lives in.
+static std::filesystem::path find_project_root(const char* argv0) {
+    std::error_code ec;
+    auto p = std::filesystem::canonical(argv0, ec).parent_path();
+    while (!p.empty() && p.has_parent_path() && p != p.parent_path()) {
+        if (std::filesystem::exists(p / "CMakeLists.txt")) return p;
+        p = p.parent_path();
+    }
+    return std::filesystem::current_path();
+}
+
+int main(int argc, char** argv) {
+    auto data_dir = find_project_root(argv[0]) / "data";
+    std::filesystem::create_directories(data_dir);
+
+    auto out_path = (data_dir / "procedural_lut.csv").string();
+    std::vector<std::string> extra = {
+        "--benchmark_out=" + out_path,
+        "--benchmark_out_format=csv",
+    };
+    std::vector<char*> args(argv, argv + argc);
+    for (auto& s : extra) args.push_back(s.data());
+    int new_argc = (int)args.size();
+
+    benchmark::Initialize(&new_argc, args.data());
+    if (benchmark::ReportUnrecognizedArguments(new_argc, args.data())) return 1;
+    benchmark::RunSpecifiedBenchmarks();
+    benchmark::Shutdown();
+    return 0;
+}

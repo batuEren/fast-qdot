@@ -73,7 +73,7 @@ target_compile_options(fast-qdot-bench PRIVATE
 )
 
 add_executable(fast-qdot-bench-procedural benchmarks/bench_procedural_lut.cpp)
-target_link_libraries(fast-qdot-bench-procedural PRIVATE benchmark::benchmark_main)
+target_link_libraries(fast-qdot-bench-procedural PRIVATE benchmark::benchmark)
 target_include_directories(fast-qdot-bench-procedural PRIVATE ${CMAKE_SOURCE_DIR})
 target_compile_options(fast-qdot-bench-procedural PRIVATE
     $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<CONFIG:Release>>:/O2>

@@ -90,12 +90,12 @@ BENCHMARK_TEMPLATE(BM_PLutTernaryLutOnly, 6)->Arg(4096)->Arg(8192);
 
 // ── Ternary: dot-product only ─────────────────────────────────────────────────
 
-BENCHMARK_TEMPLATE(BM_PLutTernaryDotOnly, 1)->Arg(4096)->Arg(8192);
-BENCHMARK_TEMPLATE(BM_PLutTernaryDotOnly, 2)->Arg(4096)->Arg(8192);
-BENCHMARK_TEMPLATE(BM_PLutTernaryDotOnly, 3)->Arg(4096)->Arg(8192);
-BENCHMARK_TEMPLATE(BM_PLutTernaryDotOnly, 4)->Arg(4096)->Arg(8192);
-BENCHMARK_TEMPLATE(BM_PLutTernaryDotOnly, 5)->Arg(4096)->Arg(8192);
-BENCHMARK_TEMPLATE(BM_PLutTernaryDotOnly, 6)->Arg(4096)->Arg(8192);
+BENCHMARK_TEMPLATE(BM_PLutTernaryDotOnly, 1)->Arg(4096)->Arg(8192)->MinTime(2.0);
+BENCHMARK_TEMPLATE(BM_PLutTernaryDotOnly, 2)->Arg(4096)->Arg(8192)->MinTime(2.0);
+BENCHMARK_TEMPLATE(BM_PLutTernaryDotOnly, 3)->Arg(4096)->Arg(8192)->MinTime(2.0);
+BENCHMARK_TEMPLATE(BM_PLutTernaryDotOnly, 4)->Arg(4096)->Arg(8192)->MinTime(2.0);
+BENCHMARK_TEMPLATE(BM_PLutTernaryDotOnly, 5)->Arg(4096)->Arg(8192)->MinTime(2.0);
+BENCHMARK_TEMPLATE(BM_PLutTernaryDotOnly, 6)->Arg(4096)->Arg(8192)->MinTime(2.0);
 
 // ── Binary: LUT build only ────────────────────────────────────────────────────
 
@@ -108,9 +108,9 @@ BENCHMARK_TEMPLATE(BM_PLutBinaryLutOnly, 6)->Arg(4096)->Arg(8192);
 
 // ── Binary: dot-product only ──────────────────────────────────────────────────
 
-BENCHMARK_TEMPLATE(BM_PLutBinaryDotOnly, 1)->Arg(4096)->Arg(8192);
-BENCHMARK_TEMPLATE(BM_PLutBinaryDotOnly, 2)->Arg(4096)->Arg(8192);
-BENCHMARK_TEMPLATE(BM_PLutBinaryDotOnly, 3)->Arg(4096)->Arg(8192);
-BENCHMARK_TEMPLATE(BM_PLutBinaryDotOnly, 4)->Arg(4096)->Arg(8192);
-BENCHMARK_TEMPLATE(BM_PLutBinaryDotOnly, 5)->Arg(4096)->Arg(8192);
-BENCHMARK_TEMPLATE(BM_PLutBinaryDotOnly, 6)->Arg(4096)->Arg(8192);
+BENCHMARK_TEMPLATE(BM_PLutBinaryDotOnly, 1)->Arg(4096)->Arg(8192)->MinTime(2.0);
+BENCHMARK_TEMPLATE(BM_PLutBinaryDotOnly, 2)->Arg(4096)->Arg(8192)->MinTime(2.0);
+BENCHMARK_TEMPLATE(BM_PLutBinaryDotOnly, 3)->Arg(4096)->Arg(8192)->MinTime(2.0);
+BENCHMARK_TEMPLATE(BM_PLutBinaryDotOnly, 4)->Arg(4096)->Arg(8192)->MinTime(2.0);
+BENCHMARK_TEMPLATE(BM_PLutBinaryDotOnly, 5)->Arg(4096)->Arg(8192)->MinTime(2.0);
+BENCHMARK_TEMPLATE(BM_PLutBinaryDotOnly, 6)->Arg(4096)->Arg(8192)->MinTime(2.0);

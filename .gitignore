@@ -23,6 +23,9 @@ _deps/
 *.ilk
 *.exp
 
+*.pdf
+*.png
+
 # Visual Studio
 .vs/
 *.suo

@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <vector>
 #include <random>
+#include <filesystem>
+#include <string>
 #include "src/naive.h"
 #include "src/mad.h"
 #include "src/mad_avx2.h"
@@ -197,3 +199,35 @@ static void BM_LutBinary(benchmark::State& state) {
     state.SetItemsProcessed(state.iterations() * n);
 }
 BENCHMARK(BM_LutBinary)->RangeMultiplier(2)->Range(64, 8192);
+
+// ── Main ──────────────────────────────────────────────────────────────────────
+
+static std::filesystem::path find_project_root(const char* argv0) {
+    std::error_code ec;
+    auto p = std::filesystem::canonical(argv0, ec).parent_path();
+    while (!p.empty() && p.has_parent_path() && p != p.parent_path()) {
+        if (std::filesystem::exists(p / "CMakeLists.txt")) return p;
+        p = p.parent_path();
+    }
+    return std::filesystem::current_path();
+}
+
+int main(int argc, char** argv) {
+    auto data_dir = find_project_root(argv[0]) / "data";
+    std::filesystem::create_directories(data_dir);
+
+    auto out_path = (data_dir / "dot_comparison.csv").string();
+    std::vector<std::string> extra = {
+        "--benchmark_out=" + out_path,
+        "--benchmark_out_format=csv",
+    };
+    std::vector<char*> args(argv, argv + argc);
+    for (auto& s : extra) args.push_back(s.data());
+    int new_argc = (int)args.size();
+
+    benchmark::Initialize(&new_argc, args.data());
+    if (benchmark::ReportUnrecognizedArguments(new_argc, args.data())) return 1;
+    benchmark::RunSpecifiedBenchmarks();
+    benchmark::Shutdown();
+    return 0;
+}

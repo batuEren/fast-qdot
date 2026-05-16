@@ -65,7 +65,7 @@ gtest_discover_tests(fast-qdot-tests)
 
 # ── Benchmarks ─────────────────────────────────────────────────────────────────
 add_executable(fast-qdot-bench benchmarks/bench_main.cpp "src/naive.cpp" "src/mad.cpp" "src/mad_avx2.cpp" "src/lut.cpp" "src/lut.h" "src/procedural_lut.cpp" "src/procedural_lut.h")
-target_link_libraries(fast-qdot-bench PRIVATE benchmark::benchmark_main)
+target_link_libraries(fast-qdot-bench PRIVATE benchmark::benchmark)
 target_include_directories(fast-qdot-bench PRIVATE ${CMAKE_SOURCE_DIR})
 target_compile_options(fast-qdot-bench PRIVATE
     $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<CONFIG:Release>>:/O2>
@@ -81,7 +81,7 @@ target_compile_options(fast-qdot-bench-procedural PRIVATE
 )
 
 add_executable(fast-qdot-bench-matvec benchmarks/bench_matvec.cpp "src/procedural_lut.cpp")
-target_link_libraries(fast-qdot-bench-matvec PRIVATE benchmark::benchmark_main)
+target_link_libraries(fast-qdot-bench-matvec PRIVATE benchmark::benchmark)
 target_include_directories(fast-qdot-bench-matvec PRIVATE ${CMAKE_SOURCE_DIR})
 target_compile_options(fast-qdot-bench-matvec PRIVATE
     $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<CONFIG:Release>>:/O2>

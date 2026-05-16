@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <vector>
 #include <random>
+#include <filesystem>
+#include <string>
 
 static std::vector<int8_t> make_activations(int n) {
     std::mt19937 rng(42);
@@ -81,3 +83,35 @@ BENCHMARK_TEMPLATE(BM_PLutBinaryMatVec, 2) MATVEC_ARGS;
 BENCHMARK_TEMPLATE(BM_PLutBinaryMatVec, 3) MATVEC_ARGS;
 BENCHMARK_TEMPLATE(BM_PLutBinaryMatVec, 4) MATVEC_ARGS;
 BENCHMARK_TEMPLATE(BM_PLutBinaryMatVec, 5) MATVEC_ARGS;
+
+// ── Main ──────────────────────────────────────────────────────────────────────
+
+static std::filesystem::path find_project_root(const char* argv0) {
+    std::error_code ec;
+    auto p = std::filesystem::canonical(argv0, ec).parent_path();
+    while (!p.empty() && p.has_parent_path() && p != p.parent_path()) {
+        if (std::filesystem::exists(p / "CMakeLists.txt")) return p;
+        p = p.parent_path();
+    }
+    return std::filesystem::current_path();
+}
+
+int main(int argc, char** argv) {
+    auto data_dir = find_project_root(argv[0]) / "data";
+    std::filesystem::create_directories(data_dir);
+
+    auto out_path = (data_dir / "matvec.csv").string();
+    std::vector<std::string> extra = {
+        "--benchmark_out=" + out_path,
+        "--benchmark_out_format=csv",
+    };
+    std::vector<char*> args(argv, argv + argc);
+    for (auto& s : extra) args.push_back(s.data());
+    int new_argc = (int)args.size();
+
+    benchmark::Initialize(&new_argc, args.data());
+    if (benchmark::ReportUnrecognizedArguments(new_argc, args.data())) return 1;
+    benchmark::RunSpecifiedBenchmarks();
+    benchmark::Shutdown();
+    return 0;
+}

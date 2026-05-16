@@ -31,31 +31,8 @@ static std::vector<uint8_t> make_binary_weights(int n) {
     return v;
 }
 
-// ── Benchmark fixtures ─────────────────────────────────────────────────────────
+// ── LUT creation only ─────────────────────────────────────────────────────────
 
-template<int N>
-static void BM_PLutTernary(benchmark::State& state) {
-    int raw_n = (int)state.range(0);
-    int n = raw_n - (raw_n % N);
-    auto w = make_ternary_weights(raw_n);
-    auto a = make_activations(raw_n);
-    for (auto _ : state)
-        benchmark::DoNotOptimize(p_lut_ternary_dot<N>(w.data(), a.data(), n));
-    state.SetItemsProcessed(state.iterations() * n);
-}
-
-template<int N>
-static void BM_PLutBinary(benchmark::State& state) {
-    int raw_n = (int)state.range(0);
-    int n = raw_n - (raw_n % N);
-    auto w = make_binary_weights(raw_n);
-    auto a = make_activations(raw_n);
-    for (auto _ : state)
-        benchmark::DoNotOptimize(p_lut_binary_dot<N>(w.data(), a.data(), n));
-    state.SetItemsProcessed(state.iterations() * n);
-}
-
-// Times only create_ternary_lut / create_binary_lut
 template<int N>
 static void BM_PLutTernaryLutOnly(benchmark::State& state) {
     int raw_n = (int)state.range(0);
@@ -76,7 +53,8 @@ static void BM_PLutBinaryLutOnly(benchmark::State& state) {
     state.SetItemsProcessed(state.iterations() * n);
 }
 
-// Times only the dot-product loop (LUT pre-built outside the timed region)
+// ── Dot product only (LUT pre-built outside the timed region) ─────────────────
+
 template<int N>
 static void BM_PLutTernaryDotOnly(benchmark::State& state) {
     int raw_n = (int)state.range(0);
@@ -84,18 +62,8 @@ static void BM_PLutTernaryDotOnly(benchmark::State& state) {
     auto w = make_ternary_weights(raw_n);
     auto a = make_activations(raw_n);
     auto lut = create_ternary_lut<N>(a.data(), n);
-    for (auto _ : state) {
-        int32_t result = 0;
-        for (int i = 0; i < n / N; i++) {
-            int lutIdx = 0, powAcc = 1;
-            for (int j = 0; j < N; j++) {
-                lutIdx += w[i * N + j] * powAcc;
-                powAcc *= 3;
-            }
-            result += lut[i][lutIdx];
-        }
-        benchmark::DoNotOptimize(result);
-    }
+    for (auto _ : state)
+        benchmark::DoNotOptimize(p_lut_ternary_dot<N>(w.data(), lut, n));
     state.SetItemsProcessed(state.iterations() * n);
 }
 
@@ -106,36 +74,10 @@ static void BM_PLutBinaryDotOnly(benchmark::State& state) {
     auto w = make_binary_weights(raw_n);
     auto a = make_activations(raw_n);
     auto lut = create_binary_lut<N>(a.data(), n);
-    for (auto _ : state) {
-        int32_t result = 0;
-        for (int i = 0; i < n / N; i++) {
-            int lutIdx = 0;
-            for (int j = 0; j < N; j++)
-                lutIdx |= (w[i * N + j] & 1) << j;
-            result += lut[i][lutIdx];
-        }
-        benchmark::DoNotOptimize(result);
-    }
+    for (auto _ : state)
+        benchmark::DoNotOptimize(p_lut_binary_dot<N>(w.data(), lut, n));
     state.SetItemsProcessed(state.iterations() * n);
 }
-
-// ── Ternary N=1..6 ─────────────────────────────────────────────────────────────
-
-BENCHMARK_TEMPLATE(BM_PLutTernary, 1)->Arg(4096)->Arg(8192);
-BENCHMARK_TEMPLATE(BM_PLutTernary, 2)->Arg(4096)->Arg(8192);
-BENCHMARK_TEMPLATE(BM_PLutTernary, 3)->Arg(4096)->Arg(8192);
-BENCHMARK_TEMPLATE(BM_PLutTernary, 4)->Arg(4096)->Arg(8192);
-BENCHMARK_TEMPLATE(BM_PLutTernary, 5)->Arg(4096)->Arg(8192);
-BENCHMARK_TEMPLATE(BM_PLutTernary, 6)->Arg(4096)->Arg(8192);
-
-// ── Binary N=1..6 ──────────────────────────────────────────────────────────────
-
-BENCHMARK_TEMPLATE(BM_PLutBinary, 1)->Arg(4096)->Arg(8192);
-BENCHMARK_TEMPLATE(BM_PLutBinary, 2)->Arg(4096)->Arg(8192);
-BENCHMARK_TEMPLATE(BM_PLutBinary, 3)->Arg(4096)->Arg(8192);
-BENCHMARK_TEMPLATE(BM_PLutBinary, 4)->Arg(4096)->Arg(8192);
-BENCHMARK_TEMPLATE(BM_PLutBinary, 5)->Arg(4096)->Arg(8192);
-BENCHMARK_TEMPLATE(BM_PLutBinary, 6)->Arg(4096)->Arg(8192);
 
 // ── Ternary: LUT build only ────────────────────────────────────────────────────
 
@@ -146,7 +88,7 @@ BENCHMARK_TEMPLATE(BM_PLutTernaryLutOnly, 4)->Arg(4096)->Arg(8192);
 BENCHMARK_TEMPLATE(BM_PLutTernaryLutOnly, 5)->Arg(4096)->Arg(8192);
 BENCHMARK_TEMPLATE(BM_PLutTernaryLutOnly, 6)->Arg(4096)->Arg(8192);
 
-// ── Ternary: dot-product loop only ────────────────────────────────────────────
+// ── Ternary: dot-product only ─────────────────────────────────────────────────
 
 BENCHMARK_TEMPLATE(BM_PLutTernaryDotOnly, 1)->Arg(4096)->Arg(8192);
 BENCHMARK_TEMPLATE(BM_PLutTernaryDotOnly, 2)->Arg(4096)->Arg(8192);
@@ -164,7 +106,7 @@ BENCHMARK_TEMPLATE(BM_PLutBinaryLutOnly, 4)->Arg(4096)->Arg(8192);
 BENCHMARK_TEMPLATE(BM_PLutBinaryLutOnly, 5)->Arg(4096)->Arg(8192);
 BENCHMARK_TEMPLATE(BM_PLutBinaryLutOnly, 6)->Arg(4096)->Arg(8192);
 
-// ── Binary: dot-product loop only ─────────────────────────────────────────────
+// ── Binary: dot-product only ──────────────────────────────────────────────────
 
 BENCHMARK_TEMPLATE(BM_PLutBinaryDotOnly, 1)->Arg(4096)->Arg(8192);
 BENCHMARK_TEMPLATE(BM_PLutBinaryDotOnly, 2)->Arg(4096)->Arg(8192);
